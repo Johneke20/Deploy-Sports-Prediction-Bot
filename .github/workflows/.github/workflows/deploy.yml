@@ -1,0 +1,36 @@
+name: Deploy Sports Prediction Bot
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 */1 * * *'  # Run every hour 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run bot
+      env:
+        TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+        CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+      run: python -m sports_predictions.main
+
+    - name: Store prediction data
+      uses: actions/upload-artifact@v2
+      with:
+        name: prediction-data
+        path: data
